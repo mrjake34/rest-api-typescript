@@ -1,12 +1,33 @@
 {
-  "name": "rest-api-typescript",
-  "version": "1.0.0",
-  "description": "RESTFul API",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "Turan Can Pamuk < turan-can.com >",
-  "license": "ISC"
+    "name": "rest-api-typescript",
+    "version": "1.0.0",
+    "description": "",
+    "main": "src/server.ts",
+    "scripts": {
+        "build": "rm -rf build/ && tsc",
+        "start": "node build/server.js",
+        "postinstall": "tsc"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "bcrypt": "^5.1.0",
+        "chalk": "^4.1.2",
+        "cookie-parser": "^1.4.6",
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "express-rate-limit": "^6.7.0",
+        "joi": "^17.9.1",
+        "jsonwebtoken": "^9.0.0",
+        "mongoose": "^7.0.3",
+        "winston": "^3.8.2"
+    },
+    "devDependencies": {
+        "@types/bcrypt": "^5.0.0",
+        "@types/cookie-parser": "^1.4.3",
+        "@types/express": "^4.17.17",
+        "@types/jsonwebtoken": "^9.0.1",
+        "typescript": "^5.0.2"
+    }
 }

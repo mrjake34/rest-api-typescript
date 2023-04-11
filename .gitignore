@@ -1,0 +1,21 @@
+"" 
+
+#folders
+/node_modules
+node_modules
+
+#virtual environments
+.venv
+.env*.local
+/.env
+env
+
+# production
+/build
+/dist
+
+# debug
+npm-debug.log*
+src/helper/ssl/cert.pem
+src/helper/ssl/certificate.csr
+src/helper/ssl/private.key
