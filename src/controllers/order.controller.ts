@@ -35,6 +35,7 @@ export const createNewOrder = async (req: RequestWithInterfaces, res: Response, 
             if (typeof productId === 'string' && typeof quantity === 'number') {
                 const product = await getProductById(productId, shopName);
                 if (!product || !product.price) {
+                    console.log(product);
                     Logging.error(statusMessages.InputsNotFilled, false);
                     return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilled });
                 }
