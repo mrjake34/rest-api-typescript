@@ -27,7 +27,7 @@ export const checkRefresh = async (req: RequestWithInterfaces, res: Response, ne
                 message: 'Unauthorized'
             });
         }
-        console.log(user);
+
         if (!user || typeof user.refreshToken === 'undefined') {
             return res.status(statusCodes.Unauthorized).json({
                 message: 'Unauthorized'
