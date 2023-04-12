@@ -2,25 +2,32 @@ import jwt from 'jsonwebtoken';
 import { NextFunction, Response } from 'express';
 import { RequestWithInterfaces, DecodedUser } from '../library/Interfaces.lib';
 import { config } from '../config/config';
-import { statusCodes } from '../library/statusCodes';
+import { statusCodes, statusMessages } from '../library/statusCodes';
 import { getRefreshTokenById } from '../models/User.model';
 import { getCourierRefreshTokenById } from '../models/courier.model';
+import Logging from '../library/Logging';
 
 export const checkRefresh = async (req: RequestWithInterfaces, res: Response, next: NextFunction) => {
     try {
         const userId = req.params.userId;
-        if (!userId || !req.user) {
+        const userRole = req.body.userRole;
+        console.log(userId, userRole);
+        if (!userId || !userRole) {
             return res.status(statusCodes.Unauthorized).json({
                 message: 'Unauthorized'
             });
         }
         let user;
-        if (req.user.role === 'user') {
+        if (userRole === 'user') {
             user = await getRefreshTokenById(userId);
-        } else if (req.user.role === 'courier') {
+        } else if (userRole === 'courier') {
             user = await getCourierRefreshTokenById(userId);
+        } else {
+            return res.status(statusCodes.Unauthorized).json({
+                message: 'Unauthorized'
+            });
         }
-
+        console.log(user);
         if (!user || typeof user.refreshToken === 'undefined') {
             return res.status(statusCodes.Unauthorized).json({
                 message: 'Unauthorized'
@@ -34,16 +41,17 @@ export const checkRefresh = async (req: RequestWithInterfaces, res: Response, ne
         };
 
         const refreshToken = user.refreshToken;
-        if (!refreshToken) {
+        if (!refreshToken || typeof refreshToken !== 'string') {
             return res.status(statusCodes.Unauthorized).json({
                 message: 'Unauthorized'
             });
         }
-
-        jwt.verify(refreshToken, config.secret.jwtSecret, async (err, user) => {
+        jwt.verify(refreshToken, config.secret.jwtSecret, (err, user) => {
             if (err) {
+                Logging.error('Unauthorized', false);
+
                 return res.status(statusCodes.Unauthorized).json({
-                    message: 'Unauthorized'
+                    message: statusMessages.Unauthorized
                 });
             }
 

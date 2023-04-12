@@ -102,7 +102,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         });
 
         const refreshToken = jwt.sign(data, config.secret.jwtSecret, {
-            expiresIn: '7d'
+            expiresIn: '24h'
         });
 
         res.cookie('client_session', accessToken, {
