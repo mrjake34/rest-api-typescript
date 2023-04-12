@@ -30,7 +30,7 @@ export const getProductsByShopNameAndName = (name: string, shopName: string) => 
 
 export const getProductById = (id: string, shopName: string) => ProductModel.findOne({ _id: id, shopName: shopName });
 
-export const createProduct = (values: Record<string, unknown>) => new ProductModel(values).save().then((product) => product.toObject());
+export const createProduct = (values: Partial<Product>) => new ProductModel(values).save().then((product) => product.toObject());
 
 export const updateProductById = (id: string, values: Partial<Product>) => ProductModel.findByIdAndUpdate(id, values);
 
