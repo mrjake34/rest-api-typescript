@@ -39,12 +39,12 @@ mongoose
 /** Only start the server if the connection is established */
 const StartServer = () => {
     router.use((req, res, next) => {
-        Logging.info(`Incoming -> Method: [${req.method}] - Url: ${req.url} - IP: [${req.socket.remoteAddress}]`, false);
+        const ip = <string>req.headers['x-forwarded-for'] || <string>req.socket.remoteAddress || '';
+        const realIp = ip.split(',')[0];
+        Logging.info(`Incoming -> Method: [${req.method}] - Url: ${req.url} - IP: [${realIp}]`, false);
 
         res.on('finish', () => {
             /** Log the Response */
-            const ip = <string>req.headers['x-forwarded-for'] || <string>req.socket.remoteAddress || '';
-            const realIp = ip.split(',')[0];
             Logging.info(`Finish -> Method: [${req.method}] - Url: ${req.url} - IP: [${realIp}] - Status: [${res.statusCode} - ${res.statusMessage}]`, false);
         });
 
