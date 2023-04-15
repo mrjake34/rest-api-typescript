@@ -108,14 +108,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         res.cookie('client_session', accessToken, {
             httpOnly: true,
             secure: true,
+            sameSite: 'none',
             maxAge: 3600000 //1 hour
         });
-
-        // res.cookie('client_refresh', refreshToken, {
-        //     httpOnly: true,
-        //     secure: true,
-        //     maxAge: 3600000 * 24 * 7 //7 day
-        // });
 
         user.refreshToken = refreshToken;
         user.ip = userIp;

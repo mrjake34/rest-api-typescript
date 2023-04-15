@@ -1,18 +1,5 @@
-/**
- * shopName: string;
- * name: string;
- * phone: number;
- * adress: string;
- *
- * longitude: number; //number contain also double variable
- * latitude: number; //number contain also double variable
- *
- * orders?
- */
-
 import mongoose, { Document, Schema } from 'mongoose';
 
-// Customer interface
 export interface Customer {
     shopName?: string;
     name?: string;
@@ -27,7 +14,6 @@ export interface Customer {
 
 export interface CustomerModel extends Customer, Document {}
 
-// Courier MongoDB Schema
 const CustomerSchema = new Schema<Customer>(
     {
         shopName: { type: String, required: true },
@@ -44,7 +30,6 @@ const CustomerSchema = new Schema<Customer>(
     }
 );
 
-// Courier Model
 export const CustomerModel = mongoose.model<Customer>('Customer', CustomerSchema);
 
 export const getCustomersByValues = (values: Record<string, string>) => CustomerModel.find(values);

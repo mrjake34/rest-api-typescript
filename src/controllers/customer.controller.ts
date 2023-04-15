@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 
 import Logging from '../library/Logging';
-import { config } from '../config/config';
+
 import { statusCodes, statusMessages } from '../library/statusCodes';
 
 import { RequestWithInterfaces, customerProps } from '../library/Interfaces.lib';
