@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import * as fs from 'fs';
 import * as https from 'https';
 import http from 'http';
+import cors from 'cors';
 
 const router = express();
 
@@ -16,6 +17,11 @@ const router = express();
 //     key: fs.readFileSync('./src/helper/ssl/private.key'),
 //     cert: fs.readFileSync('./src/helper/ssl/cert.pem')
 // };
+
+const corsOptions: cors.CorsOptions = {
+    origin: ['https://efes.tech', 'https://api.efes.tech'],
+    optionsSuccessStatus: 200
+};
 
 const Limiter = (minutes: number, limit: number) =>
     rateLimit({
@@ -55,6 +61,25 @@ const StartServer = () => {
     router.use(express.urlencoded({ extended: true }));
     router.use(express.json());
 
+    /** Rules of API */
+    router.use(cors);
+    // router.use((req, res, next) => {
+    //     // res.header('Access-Control-Allow-Origin', 'https://efes.tech, https://api.efes.tech'); // izinleri düzenle
+    //     // res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    //     // res.header('Access-Control-Allow-Credentials', 'true');
+    //     // if (req.method == 'OPTIONS') {
+    //     //     res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
+    //     //     return res.status(statusCodes.Ok).json({});
+    //     // }
+    //     // next();
+    //     res.header('Access-Control-Allow-Origin', 'https://efes.tech, https://api.efes.tech, http://localhost, https://api.efes.tech/login, https://api.efes.tech/'); // izinleri düzenle
+    //     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    //     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    //     res.header('Access-Control-Allow-Credentials', 'true');
+
+    //     next();
+    // });
+
     /** Request Limiters */
     router.use('/login', Limiter(1, 5));
     router.use('/signup', Limiter(1, 5));
@@ -65,24 +90,6 @@ const StartServer = () => {
     router.use('/couriers', Limiter(1, 100));
     router.use('/orders', Limiter(1, 100));
     router.use('/customers', Limiter(1, 100));
-
-    /** Rules of API */
-    router.use((req, res, next) => {
-        // res.header('Access-Control-Allow-Origin', 'https://efes.tech, https://api.efes.tech'); // izinleri düzenle
-        // res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-        // res.header('Access-Control-Allow-Credentials', 'true');
-        // if (req.method == 'OPTIONS') {
-        //     res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
-        //     return res.status(statusCodes.Ok).json({});
-        // }
-        // next();
-        res.header('Access-Control-Allow-Origin', 'https://efes.tech, https://api.efes.tech, http://localhost, https://api.efes.tech/login, https://api.efes.tech/'); // izinleri düzenle
-        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        res.header('Access-Control-Allow-Credentials', 'true');
-
-        next();
-    });
 
     /** Routes */
     router.use('/', routes());
