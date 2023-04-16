@@ -68,14 +68,19 @@ const StartServer = () => {
 
     /** Rules of API */
     router.use((req, res, next) => {
-        res.header('Access-Control-Allow-Origin', '*'); // izinleri düzenle
+        // res.header('Access-Control-Allow-Origin', 'https://efes.tech, https://api.efes.tech'); // izinleri düzenle
+        // res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+        // res.header('Access-Control-Allow-Credentials', 'true');
+        // if (req.method == 'OPTIONS') {
+        //     res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
+        //     return res.status(statusCodes.Ok).json({});
+        // }
+        // next();
+        res.header('Access-Control-Allow-Origin', 'https://efes.tech, https://api.efes.tech, http://localhost'); // izinleri düzenle
         res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-        // res.header('Access-Control-Expose-Headers', 'true');
+        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
         res.header('Access-Control-Allow-Credentials', 'true');
-        if (req.method == 'OPTIONS') {
-            res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
-            return res.status(statusCodes.Ok).json({});
-        }
+
         next();
     });
 
