@@ -109,7 +109,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             httpOnly: true,
             secure: true,
             sameSite: 'none',
-            domain: "api.efes.tech",
+            domain: '.efes.tech',
             maxAge: 3600000 //1 hour
         });
 
