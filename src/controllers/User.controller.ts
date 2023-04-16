@@ -121,6 +121,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             domain: '.efes.tech',
             maxAge: 3600000 //1 hour
         });
+        
         Logging.info(user.email + ' is logged in.', false);
         return res.status(statusCodes.Ok).json({ message: statusMessages.LoginSuccess, User: data }).end();
     } catch (error) {
