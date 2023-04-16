@@ -68,11 +68,11 @@ const StartServer = () => {
 
     /** Rules of API */
     router.use((req, res, next) => {
-        res.setHeader('Access-Control-Allow-Origin', '*'); // izinleri düzenle
-        res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.header('Access-Control-Allow-Origin', '*'); // izinleri düzenle
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+        res.header('Access-Control-Allow-Credentials', 'true');
         if (req.method == 'OPTIONS') {
-            res.setHeader('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
+            res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
             return res.status(statusCodes.Ok).json({});
         }
         next();
