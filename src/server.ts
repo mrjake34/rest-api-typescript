@@ -76,7 +76,7 @@ const StartServer = () => {
         //     return res.status(statusCodes.Ok).json({});
         // }
         // next();
-        res.header('Access-Control-Allow-Origin', 'https://efes.tech, https://api.efes.tech, http://localhost'); // izinleri düzenle
+        res.header('Access-Control-Allow-Origin', 'https://efes.tech, https://api.efes.tech, http://localhost, https://api.efes.tech/login, https://api.efes.tech/'); // izinleri düzenle
         res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
         res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
         res.header('Access-Control-Allow-Credentials', 'true');
