@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import * as fs from 'fs';
 import * as https from 'https';
 import http from 'http';
+import cors from 'cors';
 
 const router = express();
 
@@ -54,6 +55,7 @@ const StartServer = () => {
     router.use(cookieParser());
     router.use(express.urlencoded({ extended: true }));
     router.use(express.json());
+    router.use(cors());
 
     /** Request Limiters */
     router.use('/login', Limiter(1, 5));
@@ -66,17 +68,17 @@ const StartServer = () => {
     router.use('/orders', Limiter(1, 100));
     router.use('/customers', Limiter(1, 100));
 
-    /** Rules of API */
-    router.use((req, res, next) => {
-        res.header('Access-Control-Allow-Origin', '*'); // izinleri düzenle
-        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-        res.header('Access-Control-Allow-Credentials', 'true');
-        if (req.method == 'OPTIONS') {
-            res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
-            return res.status(statusCodes.Ok).json({});
-        }
-        next();
-    });
+    // /** Rules of API */
+    // router.use((req, res, next) => {
+    //     res.header('Access-Control-Allow-Origin', '*'); // izinleri düzenle
+    //     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    //     res.header('Access-Control-Allow-Credentials', 'true');
+    //     if (req.method == 'OPTIONS') {
+    //         res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
+    //         return res.status(statusCodes.Ok).json({});
+    //     }
+    //     next();
+    // });
 
     /** Routes */
     router.use('/', routes());
