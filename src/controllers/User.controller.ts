@@ -117,6 +117,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         res.cookie('client_session', accessToken, {
             httpOnly: true,
             secure: true,
+            sameSite: 'none',
             domain: '.efes.tech',
             maxAge: 3600000 //1 hour
         });
