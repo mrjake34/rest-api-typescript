@@ -62,7 +62,7 @@ const StartServer = () => {
     router.use(express.json());
 
     /** Rules of API */
-    router.use(cors);
+    router.use(cors(corsOptions));
     // router.use((req, res, next) => {
     //     // res.header('Access-Control-Allow-Origin', 'https://efes.tech, https://api.efes.tech'); // izinleri düzenle
     //     // res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
