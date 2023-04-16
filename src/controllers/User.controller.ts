@@ -105,14 +105,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             expiresIn: '7d'
         });
 
-        res.cookie('client_session', accessToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            domain: '.efes.tech',
-            maxAge: 3600000 //1 hour
-        });
-
         user.refreshToken = refreshToken;
         user.ip = userIp;
 
@@ -121,6 +113,14 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             .catch((err) => {
                 Logging.warn('Failed to save user ip or refreshToken', false);
             });
+
+        res.cookie('client_session', accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            domain: '.efes.tech',
+            maxAge: 3600000 //1 hour
+        });
 
         Logging.info(user.email + ' is logged in.', false);
         return res.status(statusCodes.Ok).json({ message: statusMessages.LoginSuccess, User: data }).end();
