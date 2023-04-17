@@ -34,7 +34,7 @@ export type courierProps = {
 };
 
 export type orderProps = {
-    propName: 'customerId' | 'products' | 'orderStatus' | 'courierId';
+    propName: 'customerId' | 'products' | 'orderStatus' | 'courierId' | 'orderNote';
     value: string | number | Array<any>;
 };
 

@@ -11,6 +11,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export enum OrderStatus {
     waiting = 'waiting',
+    inProcess = 'inProcess',
     inDistribution = 'inDistribution',
     completed = 'completed'
 }
@@ -23,6 +24,7 @@ export interface Order {
     products?: Array<any>;
     orderStatus?: OrderStatus;
     courierId?: string;
+    orderNote?: string;
 }
 
 export interface OrderModel extends Order, Document {}
@@ -41,9 +43,15 @@ const OrderSchema: Schema = new Schema(
                 quantity: {
                     type: String,
                     required: true
+                },
+                productNote: {
+                    type: String
                 }
             }
         ],
+        orderNote: {
+            type: String
+        },
         totalPrice: { type: Number, required: true },
         orderStatus: {
             type: String,

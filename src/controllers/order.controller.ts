@@ -19,7 +19,7 @@ import { getProductById } from '../models/Product.model';
 
 export const createNewOrder = async (req: RequestWithInterfaces, res: Response, next: NextFunction) => {
     try {
-        const { customerId, products } = req.body;
+        const { customerId, products, orderNote } = req.body;
 
         if (!customerId || !products || !req.user) {
             Logging.error(statusMessages.InputsNotFilled, false);
@@ -50,7 +50,8 @@ export const createNewOrder = async (req: RequestWithInterfaces, res: Response, 
             shopName,
             customerId,
             products,
-            totalPrice
+            totalPrice,
+            orderNote // may return undefined
         });
 
         Logging.info(statusMessages.CreateSuccess, false);
@@ -78,7 +79,8 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
         if (req.user.role === 'user') {
             const props = req.body;
             const updateOpts: Partial<OrderModel> = {};
-            const allowedProps = ['customerId', 'products', 'orderStatus', 'courierId'];
+            const allowedProps = ['customerId', 'products', 'orderStatus', 'courierId', 'orderNote'];
+            const allowedStatus = ['waiting', 'inProcess', 'inDistribution', 'completed'];
 
             for (const key in props) {
                 if (props.hasOwnProperty(key)) {
@@ -109,7 +111,7 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
                             }
                         }
                     }
-                    if (allowedProps.includes(propName)) {
+                    if (allowedProps.includes(propName) || (propName === 'orderStatus' && typeof value === 'string' && allowedStatus.includes(value))) {
                         updateOpts[propName as keyof OrderModel] = value;
                     }
                 }
@@ -121,14 +123,15 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
             const props = req.body;
             const updateOpts: Partial<OrderModel> = {};
             const allowedProps = ['orderStatus'];
+            const allowedStatus = ['waiting', 'inProcess', 'inDistribution', 'completed'];
             for (const key in props) {
                 if (props.hasOwnProperty(key)) {
                     const newData = props[key] as orderProps;
                     const { propName, value } = newData;
 
-                    if (allowedProps.includes(propName)) {
+                    if (allowedProps.includes(propName) && typeof value === 'string' && allowedStatus.includes(value)) {
                         updateOpts[propName as keyof OrderModel] = value;
-                    }
+                    } // else do nothing
                 }
             }
             const updatedOrder = await updateOrderFunction(orderId, updateOpts);
