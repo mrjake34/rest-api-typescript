@@ -8,7 +8,7 @@ import { NextFunction, Response } from 'express';
 export default (router: express.Router) => {
     router.post('/customers', checkAuthorization(false), CustomerController.createCustomer);
     router.patch('/customers/:customerId', checkAuthorization(false), CustomerController.updateCustomer);
-    router.delete('/customers/:customerId', checkAuthorization(false), CustomerController.createCustomer);
+    router.delete('/customers/:customerId', checkAuthorization(false), CustomerController.deleteCustomer);
     router.get('/customers', checkAuthorization(false), CustomerController.getCustomers);
     router.get('/customers/:customerId', checkAuthorization(true), CustomerController.getCustomerDetails);
 };
