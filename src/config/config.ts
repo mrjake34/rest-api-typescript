@@ -10,6 +10,8 @@ const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_LIN
 
 const SERVER_PORT = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 3002;
 
+const WSOCKET_PORT = process.env.WSOCKET_PORT ? Number(process.env.WSOCKET_PORT) : 3004;
+
 const JWT_SECRET = process.env.JWT_SECRET ? String(process.env.JWT_SECRET) : 'high-level-secret';
 
 export const config = {
@@ -18,6 +20,9 @@ export const config = {
     },
     server: {
         port: SERVER_PORT
+    },
+    websocket: {
+        port: WSOCKET_PORT
     },
     secret: {
         jwtSecret: JWT_SECRET
