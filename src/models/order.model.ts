@@ -70,7 +70,7 @@ export const OrderModel = mongoose.model<Order>('Order', OrderSchema);
 
 export const createOrder = (values: Partial<Order>) => new OrderModel(values).save().then((order) => order.toObject());
 
-export const updateOrder = (id: string, values: Partial<Order>) => OrderModel.findByIdAndUpdate(id, values);
+export const updateOrder = (id: string, values: Partial<OrderModel>) => OrderModel.findByIdAndUpdate(id, values);
 
 export const deleteOrder = (id: string) => OrderModel.findByIdAndDelete(id).exec();
 

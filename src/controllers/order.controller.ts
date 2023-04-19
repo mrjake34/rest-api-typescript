@@ -124,7 +124,6 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
             }
             console.log(orderId, updateOpts);
             const updatedOrder = await updateOrderFunction(orderId, updateOpts);
-            console.log(updatedOrder);
             Logging.info(statusMessages.UpdateSuccess, false);
             return res.status(statusCodes.Ok).json({ message: statusMessages.UpdateSuccess }).end();
         } else if (req.user.role === 'courier') {
