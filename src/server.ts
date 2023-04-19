@@ -73,9 +73,9 @@ const StartServer = () => {
         // }
         // next();
         res.header('Access-Control-Allow-Origin', 'https://efes.tech'); // izinleri düzenle
-        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-        // res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Credentials');
         res.header('Access-Control-Allow-Credentials', 'true');
+        // res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 
         next();
     });
