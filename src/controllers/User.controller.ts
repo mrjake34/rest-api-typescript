@@ -122,6 +122,14 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             maxAge: 3600000 //1 hour
         });
 
+        res.cookie('client_session', accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            domain: '.efes.tech',
+            maxAge: 3600000 //1 hour
+        });
+
         Logging.info(user.email + ' is logged in.', false);
         return res.status(statusCodes.Ok).json({ message: statusMessages.LoginSuccess, User: data }).end();
     } catch (error) {
