@@ -106,17 +106,25 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
                                     return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilledOrTypesWrong });
                                 }
                             }
-                            if (totalPrice !== 0 && totalPrice !== order.totalPrice) {
+                            if (totalPrice !== 0 || totalPrice !== order.totalPrice) {
                                 updateOpts['totalPrice'] = totalPrice;
                             }
                         }
                     }
-                    if (allowedProps.includes(propName) || (propName === 'orderStatus' && typeof value === 'string' && allowedStatus.includes(value))) {
-                        updateOpts[propName as keyof OrderModel] = value;
+                    if (allowedProps.includes(propName)) {
+                        if (propName === 'orderStatus') {
+                            if (typeof value === 'string' && allowedStatus.includes(value)) {
+                                updateOpts[propName as keyof OrderModel] = value;
+                            } // else do nothing
+                        } else {
+                            updateOpts[propName as keyof OrderModel] = value;
+                        }
                     }
                 }
             }
+            console.log(orderId, updateOpts);
             const updatedOrder = await updateOrderFunction(orderId, updateOpts);
+            console.log(updatedOrder);
             Logging.info(statusMessages.UpdateSuccess, false);
             return res.status(statusCodes.Ok).json({ message: statusMessages.UpdateSuccess }).end();
         } else if (req.user.role === 'courier') {
