@@ -4,7 +4,9 @@ import Logging from '../library/Logging';
 
 import { statusCodes, statusMessages } from '../library/statusCodes';
 
-import { RequestWithInterfaces, customerProps } from '../library/Interfaces.lib';
+import { RequestWithInterfaces } from '../library/Interfaces.lib';
+
+import { CustomerProps } from '../library/types.lib';
 
 import {
     getCustomerByValues,
@@ -12,7 +14,7 @@ import {
     createCustomer as createFunction,
     updateCustomer as updateFunction,
     deleteCustomer as deleteFunction,
-    CustomerModel
+    ICustomerModel
 } from '../models/customer.model';
 
 export const createCustomer = async (req: RequestWithInterfaces, res: Response, next: NextFunction) => {
@@ -58,12 +60,12 @@ export const updateCustomer = async (req: RequestWithInterfaces, res: Response) 
         }
 
         const props = req.body;
-        const updateOpts: Partial<CustomerModel> = {};
+        const updateOpts: Partial<ICustomerModel> = {};
         const allowedProps = ['name', 'phone', 'adress', 'longitude', 'latitude', 'orders'];
 
         for (const key in props) {
             if (props.hasOwnProperty(key)) {
-                const newData = props[key] as customerProps;
+                const newData = props[key] as CustomerProps;
                 const { propName, value } = newData;
                 if (propName === 'orders' && typeof value === 'string' && typeof customer.orders !== 'undefined') {
                     customer.orders.push(value);
@@ -73,7 +75,7 @@ export const updateCustomer = async (req: RequestWithInterfaces, res: Response) 
                 // }
 
                 if (allowedProps.includes(propName)) {
-                    updateOpts[propName as keyof CustomerModel] = value;
+                    updateOpts[propName as keyof ICustomerModel] = value;
                 }
 
                 const updatedCustomer = await updateFunction(customerId, updateOpts);

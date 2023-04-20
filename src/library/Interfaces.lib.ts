@@ -1,9 +1,20 @@
 import { Request } from 'express';
+import { UserRole } from './enums.lib';
 
-export enum UserRole {
-    user = 'user',
-    courier = 'courier',
-    admin = 'admin'
+export interface User {
+    name?: string;
+    email?: string;
+    password?: string;
+    phone?: string;
+    shopName?: string;
+
+    role?: UserRole;
+    refreshToken?: string;
+    ip?: string;
+
+    paymentStatus?: boolean;
+    paymentDate?: Date;
+    endDate?: Date;
 }
 
 export interface DecodedUser {
@@ -13,31 +24,39 @@ export interface DecodedUser {
     role: string;
 }
 
-export interface userProps {
-    propName: 'name' | 'email' | 'password' | 'phone' | 'shopName';
-    value: string;
-}
-
-export type productProps = {
-    propName: 'name' | 'price';
-    value: string | number;
-};
-
-export type customerProps = {
-    propName: 'name' | 'phone' | 'adress' | 'longitude' | 'latitude' | 'orders';
-    value: string | number | Array<string>;
-};
-
-export type courierProps = {
-    propName: 'name' | 'phone' | 'email' | 'password';
-    value: string;
-};
-
-export type orderProps = {
-    propName: 'customerId' | 'products' | 'orderStatus' | 'courierId' | 'orderNote';
-    value: string | number | Array<any>;
-};
-
 export interface RequestWithInterfaces extends Request {
     user?: DecodedUser;
+}
+
+
+export interface Courier {
+    name: string;
+    phone: string;
+    email: string;
+    password: string;
+    shopName?: string;
+
+    role?: UserRole;
+    refreshToken?: string;
+    ip?: string;
+
+    orders?: Array<string>;
+}
+
+export interface Customer {
+    shopName?: string;
+    name?: string;
+    phone?: string;
+    adress?: string;
+
+    longitude?: number;
+    latitude?: number;
+
+    orders?: Array<string>;
+}
+
+export interface Product {
+    name?: string;
+    shopName?: string;
+    price?: number;
 }

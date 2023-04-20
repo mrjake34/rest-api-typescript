@@ -2,10 +2,11 @@ import jwt from 'jsonwebtoken';
 import { NextFunction, Response } from 'express';
 import { config } from '../config/config';
 import { statusCodes, statusMessages } from '../library/statusCodes';
-import { RequestWithInterfaces, DecodedUser, UserRole } from '../library/Interfaces.lib';
+import { RequestWithInterfaces, DecodedUser } from '../library/Interfaces.lib';
 
-import { getUserByIdWithoutPassword } from '../models/User.model';
-import { getCourierByIdWithoutPassword } from '../models/courier.model';
+import { userGetOne } from '../models/User.model';
+import { courierGetOne } from '../models/courier.model';
+
 import Logging from '../library/Logging';
 
 export const checkAuthorization = (courierCanAccess: boolean) => {
@@ -35,7 +36,7 @@ export const checkAuthorization = (courierCanAccess: boolean) => {
 
                             return res.status(statusCodes.Unauthorized).json({ message: statusMessages.Unauthorized });
                         } else if (req.user.role === 'courier') {
-                            const courier = getCourierByIdWithoutPassword(req.user.Id);
+                            const courier = courierGetOne({ shopName: req.user.shopName, email: req.user.email });
                             if (!courier) {
                                 Logging.error('Unauthorized', false);
 
@@ -45,7 +46,7 @@ export const checkAuthorization = (courierCanAccess: boolean) => {
                             }
                         }
                         if (req.user.role === 'user') {
-                            const user = getUserByIdWithoutPassword(req.user.Id);
+                            const user = userGetOne({ shopName: req.user.shopName, email: req.user.email });
                             if (!user) {
                                 Logging.error('Unauthorized', false);
 
@@ -70,8 +71,6 @@ export const checkAuthorization = (courierCanAccess: boolean) => {
         }
     };
 };
-
-export const checkUserRole = (roles: UserRole[]) => {};
 
 // const ip = <string>req.headers['x-forwarded-for'] || <string>req.socket.remoteAddress || '';
 // const realIp = ip.split(',')[0];

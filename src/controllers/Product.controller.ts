@@ -4,7 +4,8 @@ import Logging from '../library/Logging';
 import { config } from '../config/config';
 import { statusCodes, statusMessages } from '../library/statusCodes';
 
-import { RequestWithInterfaces, productProps } from '../library/Interfaces.lib';
+import { RequestWithInterfaces, Product } from '../library/Interfaces.lib';
+import { ProductProps } from '../library/types.lib';
 import {
     getProductsByShopName,
     getProductById,
@@ -12,9 +13,8 @@ import {
     updateProductById,
     deleteProductById,
     getProductsByShopNameAndName,
-    ProductModel,
-    Product,
-    getProductsByValues
+    getProductsByValues,
+    IProductModel
 } from '../models/Product.model';
 
 export const createProduct = async (req: RequestWithInterfaces, res: Response, next: NextFunction) => {
@@ -97,11 +97,11 @@ export const updateProduct = async (req: RequestWithInterfaces, res: Response, n
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.ProductNotFound });
         }
         const props = req.body;
-        const updateOpts: Partial<ProductModel> = {};
+        const updateOpts: Partial<IProductModel> = {};
         const allowedProps = ['name', 'price'];
         for (const key in props) {
             if (props.hasOwnProperty(key)) {
-                const newData = props[key] as productProps;
+                const newData = props[key] as ProductProps;
                 const { propName, value } = newData;
                 if (propName === 'name' && typeof value === 'string') {
                     if (value === product.name) {
@@ -117,7 +117,7 @@ export const updateProduct = async (req: RequestWithInterfaces, res: Response, n
                     return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilledOrTypesWrong });
                 }
                 if (allowedProps.includes(propName)) {
-                    updateOpts[propName as keyof ProductModel] = value;
+                    updateOpts[propName as keyof IProductModel] = value;
                 }
             }
         }

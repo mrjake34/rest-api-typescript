@@ -6,8 +6,9 @@ import Logging from '../library/Logging';
 import { config } from '../config/config';
 import { statusCodes, statusMessages } from '../library/statusCodes';
 
-import { getUserByEmail, createUser, getUserByShopName, getUserByPhone, updateUserById, deleteUserById, getUserById } from '../models/User.model';
-import { RequestWithInterfaces, userProps } from '../library/Interfaces.lib';
+import { userGetOne, userGetById, userGetAll, userCreate, userDelete, userUpdate } from '../models/User.model';
+import { RequestWithInterfaces, User } from '../library/Interfaces.lib';
+import { UserProps } from '../library/types.lib';
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -18,31 +19,31 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilled });
         }
         //check variables types
-        if (typeof email != 'string' || typeof password != 'string' || typeof name != 'string' || typeof phone != 'string' || typeof shopName != 'string') {
+        if (typeof email !== 'string' || typeof password !== 'string' || typeof name !== 'string' || typeof phone !== 'string' || typeof shopName !== 'string') {
             Logging.error(statusMessages.InputsNotFilledOrTypesWrong, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilledOrTypesWrong });
         }
 
         //check existing user
-        const existingEmail = await getUserByEmail(email);
+        const existingEmail = await userGetOne({ email: email });
         if (existingEmail) {
             Logging.error(statusMessages.EmailFailed, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.EmailFailed });
         }
 
-        const existingShopName = await getUserByShopName(shopName);
+        const existingShopName = await userGetOne({ shopName: shopName });
         if (existingShopName) {
             Logging.error(statusMessages.ShopNameFailed, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.ShopNameFailed });
         }
 
-        const existingPhone = await getUserByPhone(phone);
+        const existingPhone = await userGetOne({ phone: phone });
         if (existingPhone) {
             Logging.error(statusMessages.PhoneFailed, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.PhoneFailed });
         }
 
-        const user = await createUser({
+        const user = await userCreate({
             name,
             email,
             password: await bcrypt.hash(password, 10),
@@ -72,7 +73,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilledOrTypesWrong });
         }
 
-        const user = await getUserByEmail(email);
+        const user = await userGetOne({ email: email });
         if (!user) {
             Logging.error(statusMessages.UserNotFound, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.UserNotFound });
@@ -158,25 +159,25 @@ export const updateUser = async (req: RequestWithInterfaces, res: Response, next
         const updateOpts: { [id: string]: string } = {};
 
         for (const key in props) {
-            const newData: userProps = props[key];
+            const newData: UserProps = props[key];
             updateOpts[newData.propName] = newData.value;
 
             if (newData.propName === 'email') {
-                const existingEmail = await getUserByEmail(newData.value);
+                const existingEmail = await userGetOne({ email: newData.value });
                 if (existingEmail) {
                     Logging.error(statusMessages.EmailFailed, false);
                     return res.status(statusCodes.BadRequest).json({ message: statusMessages.EmailFailed });
                 }
             } else if (newData.propName === 'phone') {
                 if (typeof newData.value === 'number') {
-                    const existingPhone = await getUserByPhone(newData.value);
+                    const existingPhone = await userGetOne({ phone: newData.value });
                     if (existingPhone) {
                         Logging.error(statusMessages.PhoneFailed, false);
                         return res.status(statusCodes.BadRequest).json({ message: statusMessages.PhoneFailed });
                     }
                 }
             } else if (newData.propName === 'shopName') {
-                const existingShopName = await getUserByShopName(newData.value);
+                const existingShopName = await userGetOne({ shopName: newData.value });
                 if (existingShopName) {
                     Logging.error(statusMessages.ShopNameFailed, false);
                     return res.status(statusCodes.BadRequest).json({ message: statusMessages.ShopNameFailed });
@@ -188,7 +189,12 @@ export const updateUser = async (req: RequestWithInterfaces, res: Response, next
             }
         }
 
-        const updatedUser = await updateUserById(userIdFromToken, updateOpts);
+        const updatedUser = await userUpdate(userIdFromToken, updateOpts);
+
+        if (!updatedUser) {
+            Logging.info(statusMessages.UpdateFailed, false);
+            return res.status(statusCodes.Ok).json({ message: statusMessages.UpdateFailed }).end();
+        }
         Logging.info(statusMessages.UpdateSuccess, false);
         return res.status(statusCodes.Ok).json({ message: statusMessages.UpdateSuccess }).end();
     } catch (error) {
@@ -212,7 +218,7 @@ export const deleteUser = async (req: RequestWithInterfaces, res: Response, next
             return res.status(statusCodes.NotFound).json({ message: statusMessages.UserIdFailed });
         }
 
-        const deletedUser = await deleteUserById(userIdFromToken);
+        const deletedUser = await userDelete(userIdFromToken);
         if (!deletedUser) {
             Logging.info(statusMessages.DeleteFailed, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.DeleteFailed });
@@ -227,27 +233,26 @@ export const deleteUser = async (req: RequestWithInterfaces, res: Response, next
 
 export const getUserDetail = async (req: RequestWithInterfaces, res: Response, next: NextFunction) => {
     try {
-        if (!req.params.userId || req.user === null || typeof req.user === 'undefined') {
+        const userIdFromParams = req.params.userId;
+        const userIdFromToken = req.user?.Id;
+
+        if (!userIdFromParams || !userIdFromToken) {
             Logging.error(statusMessages.InputsNotFilled, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilled });
         }
-
-        const userIdFromParams = req.params.userId;
-        const userIdFromToken = req.user.Id;
 
         if (userIdFromParams !== userIdFromToken) {
             Logging.error(statusMessages.UserIdFailed, false);
             return res.status(statusCodes.NotFound).json({ message: statusMessages.UserIdFailed });
         }
 
-        const user = await getUserById(userIdFromToken).catch((err) => {
-            Logging.info(statusMessages.UserNotFound, false);
-            return res.status(statusCodes.NotFound);
-        });
+        const user = await userGetById(userIdFromParams);
+
         if (!user) {
             Logging.info(statusMessages.UserNotFound, false);
             return res.status(statusCodes.NotFound).json({ message: statusMessages.UserNotFound }).end();
         }
+
         Logging.info(statusMessages.DetailsSuccess, false);
         return res.status(statusCodes.Ok).json({ message: statusMessages.DetailsSuccess, user: user }).end();
     } catch (error) {

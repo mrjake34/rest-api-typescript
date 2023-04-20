@@ -1,6 +1,8 @@
 import { NextFunction, Response } from 'express';
 
-import { RequestWithInterfaces, orderProps } from '../library/Interfaces.lib';
+import { RequestWithInterfaces } from '../library/Interfaces.lib';
+import { OrderProps } from '../library/types.lib';
+
 import Logging from '../library/Logging';
 import { statusCodes, statusMessages } from '../library/statusCodes';
 
@@ -84,7 +86,7 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
 
             for (const key in props) {
                 if (props.hasOwnProperty(key)) {
-                    const newData = props[key] as orderProps;
+                    const newData = props[key] as OrderProps;
                     const { propName, value } = newData;
                     if (propName === 'products') {
                         const { shopName } = req.user;
@@ -132,7 +134,7 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
             const allowedStatus = ['waiting', 'inProcess', 'inDistribution', 'completed'];
             for (const key in props) {
                 if (props.hasOwnProperty(key)) {
-                    const newData = props[key] as orderProps;
+                    const newData = props[key] as OrderProps;
                     const { propName, value } = newData;
 
                     if (allowedProps.includes(propName) && typeof value === 'string' && allowedStatus.includes(value)) {

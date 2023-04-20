@@ -25,6 +25,7 @@ export enum statusMessages {
 
     //failed messages
     RegisterFailed = 'Register process completed with an error',
+    CreateFailed = 'Create process completed with an error',
     UpdateFailed = 'Update process completed with an error',
     DeleteFailed = 'Delete process completed with an error',
     DetailsFailed = 'Detail process completed with an error',
@@ -43,6 +44,7 @@ export enum statusMessages {
     ProductNotFound = 'Product not found',
     OrderNotFound = 'Order not found',
     CustomerNotFound = 'Customer not found',
+    PhoneOrEmailFailed = 'Phone or Email is already in use',
 
     Unauthorized = 'Unauthorized'
 }

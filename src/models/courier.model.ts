@@ -1,33 +1,10 @@
-/**
- * shopName: string;
- * name: string;
- * phone: number;
- * email: string;
- * password: string;
- *
- * orders?
- */
 import mongoose, { Document, Schema } from 'mongoose';
-import { UserRole } from '../library/Interfaces.lib';
+import { UserRole } from '../library/enums.lib';
 
-// Courier interface
-export interface Courier {
-    name: string;
-    phone: string;
-    email: string;
-    password: string;
-    shopName?: string;
+import { Courier } from '../library/Interfaces.lib';
 
-    role?: UserRole;
-    refreshToken?: string;
-    ip?: string;
+export interface ICourierModel extends Courier, Document {}
 
-    orders?: Array<string>;
-}
-
-export interface CourierModel extends Courier, Document {}
-
-// Courier MongoDB Schema
 const CourierSchema: Schema = new Schema(
     {
         shopName: { type: String, required: true },
@@ -48,30 +25,16 @@ const CourierSchema: Schema = new Schema(
     }
 );
 
-// Courier Model
-export const CourierModel = mongoose.model<CourierModel>('Courier', CourierSchema);
+export const CourierModel = mongoose.model<ICourierModel>('Courier', CourierSchema);
 
-export const createCourier = (values: Courier) => new CourierModel(values).save().then((courier) => courier.toObject());
+export const courierGetOne = (values: Partial<Courier>): Promise<ICourierModel | null> => CourierModel.findOne(values).exec();
 
-export const updateCourierById = (id: string, values: Partial<Courier>) => CourierModel.findByIdAndUpdate(id, values);
+export const courierGetAll = (values: Partial<Courier>): Promise<ICourierModel[] | null> => CourierModel.find(values).exec();
 
-export const deleteCourierById = (id: string) => CourierModel.findByIdAndDelete({ _id: id }).exec();
+export const courierGetById = (id: string): Promise<ICourierModel | null> => CourierModel.findById(id).exec();
 
-//get courier with password
-export const getCourierById = (id: string) => CourierModel.findById(id);
+export const courierCreate = (values: Partial<Courier>): Promise<Courier> => new CourierModel(values).save().then((courier: ICourierModel) => courier.toObject() as Courier);
 
-//get courier without password
-export const getCourierByIdWithoutPassword = (id: string) => CourierModel.findById(id).select('-password');
+export const courierUpdate = (id: string, values: Partial<Courier>): Promise<ICourierModel | null> => CourierModel.findByIdAndUpdate(id, values, { new: true }).exec();
 
-export const getCourierNameAndShopName = (name: string, shopName: string) => CourierModel.findOne({ name: name, shopName: shopName }).select('-password');
-
-export const getCourierShopName = (shopName: string) => CourierModel.find({ shopName: shopName }).select('-password');
-
-//get just shopName for checking existing courier
-export const getCourierByPhone = (phone: string) => CourierModel.findOne({ phone: phone }).select('shopName');
-
-//get courier for existing courier and login
-export const getCourierByEmail = (email: string) => CourierModel.findOne({ email: email });
-
-//get refresh token
-export const getCourierRefreshTokenById = (id: string) => CourierModel.findById(id).select('_id refreshToken');
+export const courierDelete = (id: string): Promise<ICourierModel | null> => CourierModel.findByIdAndDelete(id).exec();

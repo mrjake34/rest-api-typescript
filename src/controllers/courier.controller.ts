@@ -6,54 +6,45 @@ import Logging from '../library/Logging';
 import { statusCodes, statusMessages } from '../library/statusCodes';
 import { config } from '../config/config';
 
-import { RequestWithInterfaces, courierProps } from '../library/Interfaces.lib';
-
-import {
-    createCourier as newCourier,
-    updateCourierById,
-    deleteCourierById,
-    getCourierById,
-    getCourierByIdWithoutPassword,
-    getCourierNameAndShopName,
-    getCourierRefreshTokenById,
-    getCourierByPhone,
-    getCourierByEmail,
-    Courier,
-    getCourierShopName,
-    CourierModel
-} from '../models/courier.model';
+import { RequestWithInterfaces, Courier } from '../library/Interfaces.lib';
+import { CourierProps } from '../library/types.lib';
+import { courierGetOne, courierGetById, courierGetAll, courierCreate, courierUpdate, courierDelete, ICourierModel } from '../models/courier.model';
 
 export const createCourier = async (req: RequestWithInterfaces, res: Response) => {
     try {
         //get values from request body and check their types
         const { name, phone, email, password } = req.body;
-        if (!(name || phone || email || password) || typeof name !== 'string' || typeof phone !== 'string' || typeof email !== 'string' || typeof password !== 'string' || !req.user) {
+        const user = req.user;
+        if (!name || !phone || !email || !password || !user) {
             Logging.error(statusMessages.InputsNotFilledOrTypesWrong, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilledOrTypesWrong });
         }
 
-        const shopName = req.user.shopName;
+        if (typeof name !== 'string' || typeof phone !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+            Logging.error(statusMessages.InputsNotFilledOrTypesWrong, false);
+            return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilledOrTypesWrong });
+        }
 
         //check courier is existing
-        const existingCourierPhone = await getCourierByPhone(phone);
-        const existingCourierEmail = await getCourierByEmail(email);
+        const existingCourierPhone = await courierGetOne({ phone });
+        const existingCourierEmail = await courierGetOne({ email });
 
         if (existingCourierPhone || existingCourierEmail) {
-            Logging.error(statusMessages.CourierNotFound, false);
-            return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
+            Logging.error(statusMessages.PhoneOrEmailFailed, false);
+            return res.status(statusCodes.BadRequest).json({ message: statusMessages.PhoneOrEmailFailed });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const courier: Courier = { shopName: shopName, name: name, phone: phone, email: email, password: hashedPassword };
+        const courier: Courier = { shopName: user.shopName, name: name, phone: phone, email: email, password: hashedPassword };
 
-        const createdCourier = await newCourier(courier);
+        const createdCourier = await courierCreate(courier);
 
         if (!createdCourier) {
             Logging.info(statusMessages.RegisterFailed, false);
             return res.status(statusCodes.Ok).json({ Message: statusMessages.RegisterFailed }).end();
         }
-        Logging.info(statusMessages.RegisterSuccess + ' for shopName:' + shopName, false);
+        Logging.info(statusMessages.RegisterSuccess + ' for shopName:' + user.shopName, false);
         return res.status(statusCodes.Ok).json({ Message: statusMessages.RegisterSuccess, courier: createdCourier }).end();
     } catch (error) {
         Logging.error(error, true);
@@ -65,12 +56,17 @@ export const courierLogin = async (req: RequestWithInterfaces, res: Response) =>
     try {
         const { email, password } = req.body;
 
-        if (!(email || password) || typeof email !== 'string' || typeof password !== 'string') {
+        if (!email || !password) {
             Logging.error(statusMessages.InputsNotFilledOrTypesWrong, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilledOrTypesWrong });
         }
 
-        const courier = await getCourierByEmail(email);
+        if (typeof email !== 'string' || typeof password !== 'string') {
+            Logging.error(statusMessages.InputsNotFilledOrTypesWrong, false);
+            return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilledOrTypesWrong });
+        }
+
+        const courier = await courierGetOne({ email });
         if (!courier || !courier.password) {
             Logging.error(statusMessages.CourierNotFound, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
@@ -132,23 +128,23 @@ export const updateCourier = async (req: RequestWithInterfaces, res: Response) =
 
         const courierIdFromParams = req.params.courierId;
 
-        const courier = await getCourierByIdWithoutPassword(courierIdFromParams);
+        const courier = await courierGetById(courierIdFromParams);
         if (!courier || req.user.shopName !== courier.shopName) {
             Logging.error(statusMessages.CourierNotFound, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
         }
 
         const props = req.body;
-        const updateOpts: Partial<CourierModel> = {};
+        const updateOpts: Partial<ICourierModel> = {};
         const allowedProps = ['name', 'phone', 'email', 'password'];
         for (const key in props) {
             if (props.hasOwnProperty(key)) {
-                const newData = props[key] as courierProps;
+                const newData = props[key] as CourierProps;
                 const { propName, value } = newData;
 
                 if (propName === 'phone') {
                     //check existing phone number in courier db
-                    const existingPhone = await getCourierByPhone(value);
+                    const existingPhone = await courierGetOne({ phone: value });
 
                     if (existingPhone) {
                         Logging.error(statusMessages.PhoneFailed, false);
@@ -156,7 +152,7 @@ export const updateCourier = async (req: RequestWithInterfaces, res: Response) =
                     }
                 }
                 if (propName === 'email') {
-                    const existingEmail = await getCourierByEmail(value);
+                    const existingEmail = await courierGetOne({ email: value });
                     if (existingEmail) {
                         Logging.error(statusMessages.EmailFailed, false);
                         return res.status(statusCodes.BadRequest).json({ message: statusMessages.EmailFailed });
@@ -167,11 +163,15 @@ export const updateCourier = async (req: RequestWithInterfaces, res: Response) =
                     return res.status(statusCodes.BadRequest).json({ message: statusMessages.InputsNotFilledOrTypesWrong });
                 }
                 if (allowedProps.includes(propName)) {
-                    updateOpts[propName as keyof CourierModel] = value;
+                    updateOpts[propName as keyof ICourierModel] = value;
                 }
             }
         }
-        const updatedCourier = await updateCourierById(req.params.courierId, updateOpts);
+        const updatedCourier = await courierUpdate(req.params.courierId, updateOpts);
+        if (!updatedCourier) {
+            Logging.info(statusMessages.UpdateFailed, false);
+            return res.status(statusCodes.Ok).json({ message: statusMessages.UpdateFailed }).end();
+        }
         Logging.info(statusMessages.UpdateSuccess, false);
         return res.status(statusCodes.Ok).json({ message: statusMessages.UpdateSuccess }).end();
     } catch (error) {
@@ -187,14 +187,14 @@ export const deleteCourier = async (req: RequestWithInterfaces, res: Response) =
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
         }
 
-        const courier = await getCourierByIdWithoutPassword(req.params.courierId);
+        const courier = await courierGetById(req.params.courierId);
 
         if (!courier || courier.shopName !== req.user.shopName) {
             Logging.error(statusMessages.CourierNotFound, false);
             return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
         }
 
-        const deletedCourier = await deleteCourierById(req.params.courierId);
+        const deletedCourier = await courierDelete(req.params.courierId);
         if (deletedCourier) {
             return res.status(statusCodes.Ok).json({ message: statusMessages.DeleteSuccess }).end();
         } else {
@@ -207,32 +207,42 @@ export const deleteCourier = async (req: RequestWithInterfaces, res: Response) =
 };
 
 export const getCouriers = async (req: RequestWithInterfaces, res: Response) => {
-    if (!req.user) {
-        Logging.error(statusMessages.CourierNotFound, false);
-        return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
-    }
+    try {
+        if (!req.user) {
+            Logging.error(statusMessages.CourierNotFound, false);
+            return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
+        }
 
-    const couriers = await getCourierShopName(req.user.shopName);
+        const couriers = await courierGetAll({ shopName: req.user.shopName });
 
-    if (!couriers) {
-        Logging.error(statusMessages.CourierNotFound, false);
-        return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
+        if (!couriers) {
+            Logging.error(statusMessages.CourierNotFound, false);
+            return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
+        }
+        Logging.info(statusMessages.ListSuccess, false);
+        return res.status(statusCodes.Ok).json({ message: statusMessages.ListSuccess, couriers: couriers }).end();
+    } catch (error) {
+        Logging.error(error, true);
+        return res.status(statusCodes.BadRequest).json({ message: error });
     }
-    Logging.info(statusMessages.ListSuccess, false);
-    return res.status(statusCodes.Ok).json({ message: statusMessages.ListSuccess, couriers: couriers }).end();
 };
 
 export const getCourierDetails = async (req: RequestWithInterfaces, res: Response) => {
-    const courierId = req.params.courierId;
-    if (!req.user || !courierId) {
-        Logging.error(statusMessages.CourierNotFound, false);
-        return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
+    try {
+        const courierId = req.params.courierId;
+        if (!req.user || !courierId) {
+            Logging.error(statusMessages.CourierNotFound, false);
+            return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
+        }
+        const courier = await courierGetById(courierId);
+        if (!courier) {
+            Logging.error(statusMessages.CourierNotFound, false);
+            return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
+        }
+        Logging.info(statusMessages.ListSuccess, false);
+        return res.status(statusCodes.Ok).json({ message: statusMessages.ListSuccess, courier: courier }).end();
+    } catch (error) {
+        Logging.error(error, true);
+        return res.status(statusCodes.BadRequest).json({ message: error });
     }
-    const courier = await getCourierById(courierId);
-    if (!courier) {
-        Logging.error(statusMessages.CourierNotFound, false);
-        return res.status(statusCodes.BadRequest).json({ message: statusMessages.CourierNotFound });
-    }
-    Logging.info(statusMessages.ListSuccess, false);
-    return res.status(statusCodes.Ok).json({ message: statusMessages.ListSuccess, courier: courier }).end();
 };

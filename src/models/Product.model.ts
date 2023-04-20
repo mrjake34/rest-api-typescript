@@ -1,12 +1,8 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface Product {
-    name?: string;
-    shopName?: string;
-    price?: number;
-}
+import { Product } from '../library/Interfaces.lib';
 
-export interface ProductModel extends Product, Document {}
+export interface IProductModel extends Product, Document {}
 
 const ProductSchema: Schema = new Schema(
     {
@@ -20,7 +16,7 @@ const ProductSchema: Schema = new Schema(
     }
 );
 
-export const ProductModel = mongoose.model<ProductModel>('Product', ProductSchema);
+export const ProductModel = mongoose.model<IProductModel>('Product', ProductSchema);
 
 export const getProductsByValues = (values: Partial<Product>) => ProductModel.find(values);
 

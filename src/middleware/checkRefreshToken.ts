@@ -3,15 +3,15 @@ import { NextFunction, Response } from 'express';
 import { RequestWithInterfaces, DecodedUser } from '../library/Interfaces.lib';
 import { config } from '../config/config';
 import { statusCodes, statusMessages } from '../library/statusCodes';
-import { getRefreshTokenById } from '../models/User.model';
-import { getCourierRefreshTokenById } from '../models/courier.model';
+import { userGetById } from '../models/User.model';
+import { courierGetById } from '../models/courier.model';
 import Logging from '../library/Logging';
 
 export const checkRefresh = async (req: RequestWithInterfaces, res: Response, next: NextFunction) => {
     try {
         const userId = req.params.userId;
         const userRole = req.body.userRole;
-        console.log(userId, userRole);
+
         if (!userId || !userRole) {
             return res.status(statusCodes.Unauthorized).json({
                 message: 'Unauthorized'
@@ -19,9 +19,9 @@ export const checkRefresh = async (req: RequestWithInterfaces, res: Response, ne
         }
         let user;
         if (userRole === 'user') {
-            user = await getRefreshTokenById(userId);
+            user = await userGetById(userId);
         } else if (userRole === 'courier') {
-            user = await getCourierRefreshTokenById(userId);
+            user = await courierGetById(userId);
         } else {
             return res.status(statusCodes.Unauthorized).json({
                 message: 'Unauthorized'

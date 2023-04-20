@@ -1,18 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { Customer } from '../library/Interfaces.lib';
 
-export interface Customer {
-    shopName?: string;
-    name?: string;
-    phone?: string;
-    adress?: string;
-
-    longitude?: number;
-    latitude?: number;
-
-    orders?: Array<string>;
-}
-
-export interface CustomerModel extends Customer, Document {}
+export interface ICustomerModel extends Customer, Document {}
 
 const CustomerSchema = new Schema<Customer>(
     {
@@ -30,7 +19,7 @@ const CustomerSchema = new Schema<Customer>(
     }
 );
 
-export const CustomerModel = mongoose.model<Customer>('Customer', CustomerSchema);
+export const CustomerModel = mongoose.model<ICustomerModel>('Customer', CustomerSchema);
 
 export const getCustomersByValues = (values: Record<string, string>) => CustomerModel.find(values);
 

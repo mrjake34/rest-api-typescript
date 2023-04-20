@@ -1,26 +1,12 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
-import { UserRole } from '../library/Interfaces.lib';
+import { User } from '../library/Interfaces.lib';
 
-export interface User {
-    name: string;
-    email: string;
-    password: string;
-    phone: string;
-    shopName: string;
+import { UserRole } from '../library/enums.lib';
 
-    role?: UserRole;
-    refreshToken?: string;
-    ip?: string;
+export interface IUserModel extends User, Document {}
 
-    paymentStatus?: boolean;
-    paymentDate?: Date;
-    endDate?: Date;
-}
-
-export interface UserModel extends User, Document {}
-
-const UserSchema: Schema = new Schema(
+const UserSchema: Schema<IUserModel> = new Schema<IUserModel>(
     {
         name: { type: String, required: true },
         email: { type: String, required: true, unique: true },
@@ -30,6 +16,7 @@ const UserSchema: Schema = new Schema(
 
         role: { type: String, enum: Object.values(UserRole), default: UserRole.user },
         refreshToken: { type: String },
+
         ip: { type: String },
 
         paymentStatus: { type: Boolean, default: false },
@@ -42,25 +29,16 @@ const UserSchema: Schema = new Schema(
     }
 );
 
-export const UserModel = mongoose.model<UserModel>('User', UserSchema);
+export const UserModel: Model<IUserModel> = mongoose.model<IUserModel>('User', UserSchema);
 
-export const getUserById = (id: string) => UserModel.findById(id).select('-refreshToken');
-export const getUserByIdWithoutPassword = (id: string) => UserModel.findById(id).select('-refreshToken -password');
+export const userGetOne = (values: Partial<User>): Promise<IUserModel | null> => UserModel.findOne(values).exec();
 
-export const getRefreshTokenById = (id: string) => UserModel.findById(id).select('-password');
+export const userGetById = (id: string): Promise<IUserModel | null> => UserModel.findById(id).exec();
 
-export const getUserByShopName = (shopName: string) => UserModel.findOne({ shopName: shopName }).select('-password');
+export const userGetAll = (): Promise<IUserModel[]> => UserModel.find().exec();
 
-export const getUserByEmail = (email: string) => UserModel.findOne({ email: email });
+export const userCreate = (values: Partial<User>): Promise<User> => new UserModel(values).save().then((user: IUserModel) => user.toObject() as User);
 
-export const getUserByPhone = (phone: string) => UserModel.findOne({ phone: phone });
+export const userUpdate = (id: string, values: Partial<User>): Promise<IUserModel | null> => UserModel.findByIdAndUpdate(id, values, { new: true }).exec();
 
-export const createUser = (values: Record<string, unknown>) => new UserModel(values).save().then((user) => user.toObject());
-
-export const deleteUserById = (id: string) => UserModel.findByIdAndDelete({ _id: id }).exec();
-
-export const updateUserById = (id: string, values: Record<string, unknown>) => UserModel.findByIdAndUpdate(id, values);
-
-export const getUserByRefreshToken = (refreshToken: string) => UserModel.findOne({ refreshToken: refreshToken });
-
-export const getUserByIp = (ip: string) => UserModel.findOne({ ip: ip });
+export const userDelete = (id: string): Promise<IUserModel | null> => UserModel.findByIdAndDelete(id).exec();

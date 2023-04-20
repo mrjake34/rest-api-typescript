@@ -1,12 +1,3 @@
-/**
- * shopName: string;
- * customerId: string
- * products: products array
- * totalPrice: number
- * orderStatus: enum(0,1,2)(waiting, inDistribution, completed)
- * courierId?: courierId
- *
- */
 import mongoose, { Document, Schema } from 'mongoose';
 
 export enum OrderStatus {
