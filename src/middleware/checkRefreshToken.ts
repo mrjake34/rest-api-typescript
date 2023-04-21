@@ -62,6 +62,8 @@ export const checkRefresh = async (req: RequestWithInterfaces, res: Response, ne
             res.cookie('client_session', accessToken, {
                 httpOnly: true,
                 secure: true,
+                sameSite: 'none',
+                domain: '.efes.tech',
                 maxAge: 3600000 //1 hour
             });
 
