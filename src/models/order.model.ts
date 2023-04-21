@@ -52,7 +52,7 @@ export const deleteOrder = (id: string): Promise<IOrderModel | null> => OrderMod
 
 export const getOrdersByValues = (values: Partial<Order>): Promise<IOrderModel[]> => OrderModel.find(values).exec();
 
-export const getOrderDetailByValues = (id: string, shopName: string): Promise<IUserModel | null> => OrderModel.findOne({ _id: id, shopName: shopName }).exec();
+export const getOrderDetailByValues = (id: string, shopName: string): Promise<IOrderModel | null> => OrderModel.findOne({ _id: id, shopName: shopName }).exec();
 
-export const getOrderDetailByValuesForCourier = (id: string, shopName: string, courierId: string): Promise<IUserModel | null> =>
+export const getOrderDetailByValuesForCourier = (id: string, shopName: string, courierId: string): Promise<IOrderModel | null> =>
     OrderModel.findOne({ _id: id, shopName: shopName, courierId: courierId }).exec();
