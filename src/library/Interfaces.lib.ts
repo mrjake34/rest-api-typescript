@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import { UserRole } from './enums.lib';
+import { OrderStatus } from '../library/enums.lib';
 
 export interface User {
     name?: string;
@@ -27,7 +28,6 @@ export interface DecodedUser {
 export interface RequestWithInterfaces extends Request {
     user?: DecodedUser;
 }
-
 
 export interface Courier {
     name: string;
@@ -59,4 +59,15 @@ export interface Product {
     name?: string;
     shopName?: string;
     price?: number;
+}
+
+export interface Order {
+    shopName?: string;
+    totalPrice?: number;
+
+    customerId?: string;
+    products?: Array<any>;
+    orderStatus?: OrderStatus;
+    courierId?: string;
+    orderNote?: string;
 }

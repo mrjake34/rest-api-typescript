@@ -3,3 +3,10 @@ export enum UserRole {
     courier = 'courier',
     admin = 'admin'
 }
+
+export enum OrderStatus {
+    waiting = 'waiting',
+    inProcess = 'inProcess',
+    inDistribution = 'inDistribution',
+    completed = 'completed'
+}

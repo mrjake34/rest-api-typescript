@@ -1,24 +1,9 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { Order } from '../library/Interfaces.lib';
+import { OrderStatus } from '../library/enums.lib';
+import { IUserModel } from './User.model';
 
-export enum OrderStatus {
-    waiting = 'waiting',
-    inProcess = 'inProcess',
-    inDistribution = 'inDistribution',
-    completed = 'completed'
-}
-
-export interface Order {
-    shopName?: string;
-    totalPrice?: number;
-
-    customerId?: string;
-    products?: Array<any>;
-    orderStatus?: OrderStatus;
-    courierId?: string;
-    orderNote?: string;
-}
-
-export interface OrderModel extends Order, Document {}
+export interface IOrderModel extends Order, Document {}
 
 const OrderSchema: Schema = new Schema(
     {
@@ -59,14 +44,15 @@ const OrderSchema: Schema = new Schema(
 
 export const OrderModel = mongoose.model<Order>('Order', OrderSchema);
 
-export const createOrder = (values: Partial<Order>) => new OrderModel(values).save().then((order) => order.toObject());
+export const createOrder = (values: Partial<Order>): Promise<Order> => new OrderModel(values).save().then((order: IOrderModel) => order.toObject() as Order);
 
-export const updateOrder = (id: string, values: Partial<OrderModel>) => OrderModel.findByIdAndUpdate(id, values);
+export const updateOrder = (id: string, values: Partial<Order>): Promise<IOrderModel | null> => OrderModel.findByIdAndUpdate(id, values, { new: true }).exec();
 
-export const deleteOrder = (id: string) => OrderModel.findByIdAndDelete(id).exec();
+export const deleteOrder = (id: string): Promise<IOrderModel | null> => OrderModel.findByIdAndDelete(id).exec();
 
-export const getOrdersByValues = (values: Partial<Order>) => OrderModel.find(values);
+export const getOrdersByValues = (values: Partial<Order>): Promise<IOrderModel[]> => OrderModel.find(values).exec();
 
-export const getOrderDetailByValues = (id: string, shopName: string) => OrderModel.findOne({ _id: id, shopName: shopName });
+export const getOrderDetailByValues = (id: string, shopName: string): Promise<IUserModel | null> => OrderModel.findOne({ _id: id, shopName: shopName }).exec();
 
-export const getOrderDetailByValuesForCourier = (id: string, shopName: string, courierId: string) => OrderModel.findOne({ _id: id, shopName: shopName, courierId: courierId });
+export const getOrderDetailByValuesForCourier = (id: string, shopName: string, courierId: string): Promise<IUserModel | null> =>
+    OrderModel.findOne({ _id: id, shopName: shopName, courierId: courierId }).exec();

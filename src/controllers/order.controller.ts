@@ -6,16 +6,16 @@ import { OrderProps } from '../library/types.lib';
 import Logging from '../library/Logging';
 import { statusCodes, statusMessages } from '../library/statusCodes';
 
+import { Order } from '../library/Interfaces.lib';
+import { OrderStatus } from '../library/enums.lib';
 import {
-    OrderStatus,
     createOrder,
     updateOrder as updateOrderFunction,
     deleteOrder as deleteOrderFunction,
     getOrdersByValues,
     getOrderDetailByValues,
-    OrderModel,
     getOrderDetailByValuesForCourier,
-    Order
+    IOrderModel
 } from '../models/order.model';
 import { getProductById } from '../models/Product.model';
 
@@ -80,7 +80,7 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
 
         if (req.user.role === 'user') {
             const props = req.body;
-            const updateOpts: Partial<OrderModel> = {};
+            const updateOpts: Partial<IOrderModel> = {};
             const allowedProps = ['customerId', 'products', 'orderStatus', 'courierId', 'orderNote'];
             const allowedStatus = ['waiting', 'inProcess', 'inDistribution', 'completed'];
 
@@ -116,10 +116,10 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
                     if (allowedProps.includes(propName)) {
                         if (propName === 'orderStatus') {
                             if (typeof value === 'string' && allowedStatus.includes(value)) {
-                                updateOpts[propName as keyof OrderModel] = value;
+                                updateOpts[propName as keyof IOrderModel] = value;
                             } // else do nothing
                         } else {
-                            updateOpts[propName as keyof OrderModel] = value;
+                            updateOpts[propName as keyof IOrderModel] = value;
                         }
                     }
                 }
@@ -129,7 +129,7 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
             return res.status(statusCodes.Ok).json({ message: statusMessages.UpdateSuccess }).end();
         } else if (req.user.role === 'courier') {
             const props = req.body;
-            const updateOpts: Partial<OrderModel> = {};
+            const updateOpts: Partial<IOrderModel> = {};
             const allowedProps = ['orderStatus'];
             const allowedStatus = ['waiting', 'inProcess', 'inDistribution', 'completed'];
             for (const key in props) {
@@ -138,7 +138,7 @@ export const updateOrder = async (req: RequestWithInterfaces, res: Response) => 
                     const { propName, value } = newData;
 
                     if (allowedProps.includes(propName) && typeof value === 'string' && allowedStatus.includes(value)) {
-                        updateOpts[propName as keyof OrderModel] = value;
+                        updateOpts[propName as keyof IOrderModel] = value;
                     } // else do nothing
                 }
             }
