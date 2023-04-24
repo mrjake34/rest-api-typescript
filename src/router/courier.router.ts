@@ -8,6 +8,6 @@ export default (router: express.Router) => {
     router.post('/couriers/login', CourierController.courierLogin);
     router.get('/couriers', checkAuthorization(false), CourierController.getCouriers);
     router.get('/couriers/:courierId', checkAuthorization(true), CourierController.getCourierDetails);
-    router.patch('/couriers/:courierId', checkAuthorization(false), CourierController.deleteCourier);
-    router.delete('/couriers/:courierId', checkAuthorization(false), CourierController.updateCourier);
+    router.patch('/couriers/:courierId', checkAuthorization(false), CourierController.updateCourier);
+    router.delete('/couriers/:courierId', checkAuthorization(false), CourierController.deleteCourier);
 };
