@@ -12,7 +12,7 @@ export default (router: express.Router) => {
 
     router.get('/products', checkAuthorization(false), ProductController.getProducts);
 
-    router.get('/products/:productId', checkAuthorization(false), ProductController.getProductDetail);
+    router.get('/products/:productId', checkAuthorization(true), ProductController.getProductDetail);
 
     router.patch('/products/:productId', checkAuthorization(false), ProductController.updateProduct);
 
