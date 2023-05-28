@@ -99,7 +99,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         };
 
         const accessToken = jwt.sign(data, config.secret.jwtSecret, {
-            expiresIn: '15m'
+            expiresIn: '7d'
         });
 
         const refreshToken = jwt.sign(data, config.secret.jwtSecret, {
@@ -122,6 +122,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             domain: '.efes.tech',
             maxAge: 3600000 //1 hour
         });
+
+        res.header('Authorization', `Bearer ${accessToken}`);
 
         Logging.info(user.email + ' is logged in.', false);
         return res.status(statusCodes.Ok).json({ message: statusMessages.LoginSuccess, User: data }).end();

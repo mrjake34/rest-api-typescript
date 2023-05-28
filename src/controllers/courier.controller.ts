@@ -89,7 +89,7 @@ export const courierLogin = async (req: RequestWithInterfaces, res: Response) =>
         };
 
         const accessToken = jwt.sign(data, config.secret.jwtSecret, {
-            expiresIn: '15m'
+            expiresIn: '7d'
         });
 
         const refreshToken = jwt.sign(data, config.secret.jwtSecret, {
@@ -101,6 +101,8 @@ export const courierLogin = async (req: RequestWithInterfaces, res: Response) =>
             secure: true,
             maxAge: 3600000 //1 hour
         });
+
+        res.header('Authorization', `Bearer ${accessToken}`);
 
         courier.refreshToken = refreshToken;
         courier.ip = courierIp;
