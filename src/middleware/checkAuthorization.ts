@@ -12,62 +12,41 @@ import Logging from '../library/Logging';
 export const checkAuthorization = (courierCanAccess: boolean) => {
     return (req: RequestWithInterfaces, res: Response, next: NextFunction) => {
         try {
-            if (typeof req === 'undefined' || typeof next === 'undefined') {
-                Logging.error('Unauthorized', false);
+            const token = req.header('Authorization')?.replace('Bearer ', '');
 
-                return res.status(statusCodes.Unauthorized).json({
-                    message: statusMessages.Unauthorized
-                });
+            if (!token) {
+                Logging.error('Invalid or undefined token.', false);
+
+                throw new Error('Invalid or undefined token.');
             }
-            if (req.cookies && req.cookies.client_session) {
-                const token = req.cookies.client_session;
-                if (token && typeof token === 'string') {
-                    jwt.verify(token, config.secret.jwtSecret, (err, user) => {
-                        if (err) {
-                            Logging.error('Unauthorized', false);
 
-                            return res.status(statusCodes.Unauthorized).json({
-                                message: statusMessages.Unauthorized
-                            });
-                        }
-                        req.user = <DecodedUser>user;
-                        if (req.user.role === 'courier' && !courierCanAccess) {
-                            Logging.error('Unauthorized', false);
-
-                            return res.status(statusCodes.Unauthorized).json({ message: statusMessages.Unauthorized });
-                        } else if (req.user.role === 'courier') {
-                            const courier = courierGetOne({ shopName: req.user.shopName, email: req.user.email });
-                            if (!courier) {
-                                Logging.error('Unauthorized', false);
-
-                                return res.status(statusCodes.Unauthorized).json({
-                                    message: statusMessages.Unauthorized
-                                });
-                            }
-                        }
-                        if (req.user.role === 'user') {
-                            const user = userGetOne({ shopName: req.user.shopName, email: req.user.email });
-                            if (!user) {
-                                Logging.error('Unauthorized', false);
-
-                                return res.status(statusCodes.Unauthorized).json({
-                                    message: statusMessages.Unauthorized
-                                });
-                            }
-                        }
-
-                        next();
-                    });
+            jwt.verify(token, config.secret.jwtSecret, (err, user) => {
+                if (err) {
+                    throw new Error('Invalid or expired token.');
                 }
-            } else {
-                Logging.error('Unauthorized', false);
 
-                return res.status(statusCodes.Unauthorized).json({ message: statusMessages.Unauthorized });
-            }
+                req.user = <DecodedUser>user;
+
+                if (req.user.role === 'courier' && !courierCanAccess) {
+                    throw new Error('Invalid permission.');
+                } else if (req.user.role === 'courier') {
+                    const courier = courierGetOne({ shopName: req.user.shopName, email: req.user.email });
+                    if (!courier) {
+                        throw new Error('Something wrong at line 33');
+                    }
+                }
+                if (req.user.role === 'user') {
+                    const user = userGetOne({ shopName: req.user.shopName, email: req.user.email });
+                    if (!user) {
+                        throw new Error('Something wrong at line 39');
+                    }
+                }
+                next();
+            });
         } catch (error) {
             Logging.error(error, true);
 
-            return res.status(statusCodes.Unauthorized).json({ message: statusMessages.Unauthorized });
+            return res.status(statusCodes.Unauthorized).json({ message: error });
         }
     };
 };
