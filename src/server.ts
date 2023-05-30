@@ -58,8 +58,8 @@ const StartServer = () => {
     /** Rules of API */
     router.use((req, res, next) => {
         res.header('Access-Control-Allow-Origin', 'https://siparistakip.efes.tech');
-        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Credentials, withCredentials, Authorization');
-        res.header('Access-Control-Allow-Credentials', 'true');
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Credentials, withCredentials, Authorization, Access-Control-Allow-Credentials');
+	res.header('Access-Control-Allow-Credentials', 'true');
         next();
     });
 
