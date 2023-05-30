@@ -54,7 +54,7 @@ const StartServer = () => {
     router.use(cookieParser());
     router.use(express.urlencoded({ extended: true }));
     router.use(express.json());
-
+	
     /** Rules of API */
     router.use((req, res, next) => {
         res.header('Access-Control-Allow-Origin', 'https://siparistakip.efes.tech');
