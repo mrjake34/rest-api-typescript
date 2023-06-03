@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 //import * as fs from 'fs'; //for local https server
 //import * as https from 'https'; //for local https server
 import http from 'http';
+import cors from 'cors';
 
 const router = express();
 
@@ -18,77 +19,84 @@ const router = express();
 // };
 
 const Limiter = (minutes: number, limit: number) =>
-    rateLimit({
-        windowMs: minutes * 60 * 1000, // 1 minutes
-        max: limit, // Limit each IP to 100 requests per `windowMs` (here, per 1 minutes)
-        standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-        legacyHeaders: false // Disable the `X-RateLimit-*` headers
-    });
+  rateLimit({
+    windowMs: minutes * 60 * 1000, // 1 minutes
+    max: limit, // Limit each IP to 100 requests per `windowMs` (here, per 1 minutes)
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false // Disable the `X-RateLimit-*` headers
+  });
 
 mongoose
-    .connect(config.mongo.url)
-    .then(() => {
-        Logging.info('Connected to MongoDB', false);
-        StartServer();
-    })
-    .catch((error) => {
-        Logging.error('Unable to connect to MongoDB', false);
-        Logging.error(error, true);
-    });
+  .connect(config.mongo.url)
+  .then(() => {
+    Logging.info('Connected to MongoDB', false);
+    StartServer();
+  })
+  .catch((error) => {
+    Logging.error('Unable to connect to MongoDB', false);
+    Logging.error(error, true);
+  });
 
 /** Only start the server if the connection is established */
 const StartServer = () => {
-    router.use((req, res, next) => {
-        const ip = <string>req.headers['x-forwarded-for'] || <string>req.socket.remoteAddress || '';
-        const realIp = ip.split(',')[0];
-        Logging.info(`Incoming -> Method: [${req.method}] - Url: ${req.url} - IP: [${realIp}]`, false);
+  router.use((req, res, next) => {
+    const ip = <string>req.headers['x-forwarded-for'] || <string>req.socket.remoteAddress || '';
+    const realIp = ip.split(',')[0];
+    Logging.info(`Incoming -> Method: [${req.method}] - Url: ${req.url} - IP: [${realIp}]`, false);
 
-        res.on('finish', () => {
-            /** Log the Response */
-            Logging.info(`Finish -> Method: [${req.method}] - Url: ${req.url} - IP: [${realIp}] - Status: [${res.statusCode} - ${res.statusMessage}]`, false);
-        });
-
-        next();
+    res.on('finish', () => {
+      /** Log the Response */
+      Logging.info(`Finish -> Method: [${req.method}] - Url: ${req.url} - IP: [${realIp}] - Status: [${res.statusCode} - ${res.statusMessage}]`, false);
     });
 
-    router.use(cookieParser());
-    router.use(express.urlencoded({ extended: true }));
-    router.use(express.json());
-	
-    /** Rules of API */
-    router.use((req, res, next) => {
-        res.header('Access-Control-Allow-Origin', 'https://siparistakip.efes.tech');
-        res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Credentials, Authorization');
-        res.header('Access-Control-Allow-Credentials', 'true');
-        next();
-    });
+    next();
+  });
 
-    /** Request Limiters */
-    router.use('/login', Limiter(1, 5));
-    router.use('/signup', Limiter(1, 5));
-    router.use('/refresh', Limiter(1, 5));
+  router.use(cookieParser());
+  router.use(express.urlencoded({ extended: true }));
+  router.use(express.json());
 
-    router.use('/user', Limiter(1, 100));
-    router.use('/products', Limiter(1, 100));
-    router.use('/couriers', Limiter(1, 100));
-    router.use('/orders', Limiter(1, 100));
-    router.use('/customers', Limiter(1, 100));
+  /** Rules of API */
+  //router.use((req, res, next) => {
+  //res.header('Access-Control-Allow-Origin', 'https://siparistakip.efes.tech');
+  //res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Credentials, Authorization');
+  //res.header('Access-Control-Allow-Credentials', 'true');
+  //next();
+  //});
+  router.use(
+    cors({
+      origin: 'https://siparistakip.efes.tech',
+      allowedHeaders: ['Origin', 'Content-Type', 'Accept', 'Credentials', 'Authorization'],
+      credentials: true,
+    })
+  )
 
-    /** Routes */
-    router.use('/', routes());
+  /** Request Limiters */
+  router.use('/login', Limiter(1, 5));
+  router.use('/signup', Limiter(1, 5));
+  router.use('/refresh', Limiter(1, 5));
 
-    /** Healtcheck */
-    router.get('/ping', (req, res, next) => res.status(statusCodes.Ok).json({ message: 'pong' }));
+  router.use('/user', Limiter(1, 100));
+  router.use('/products', Limiter(1, 100));
+  router.use('/couriers', Limiter(1, 100));
+  router.use('/orders', Limiter(1, 100));
+  router.use('/customers', Limiter(1, 100));
 
-    /** Error handling */
-    router.use((req, res, next) => {
-        const ip = <string>req.headers['x-forwarded-for'] || <string>req.socket.remoteAddress || '';
-        const realIp = ip.split(',')[0];
-        const error = new Error(`Page Not Found! - IP: [${realIp}]`);
-        Logging.error(`Page Not Found! - IP: [${realIp}]`, true);
+  /** Routes */
+  router.use('/', routes());
 
-        return res.status(statusCodes.NotFound).json({ message: error.message });
-    });
+  /** Healtcheck */
+  router.get('/ping', (req, res, next) => res.status(statusCodes.Ok).json({ message: 'pong' }));
 
-    http.createServer(router).listen(config.server.port, () => Logging.info('Server is runnging on port ' + config.server.port, false));
+  /** Error handling */
+  router.use((req, res, next) => {
+    const ip = <string>req.headers['x-forwarded-for'] || <string>req.socket.remoteAddress || '';
+    const realIp = ip.split(',')[0];
+    const error = new Error(`Page Not Found! - IP: [${realIp}]`);
+    Logging.error(`Page Not Found! - IP: [${realIp}]`, true);
+
+    return res.status(statusCodes.NotFound).json({ message: error.message });
+  });
+
+  http.createServer(router).listen(config.server.port, () => Logging.info('Server is runnging on port ' + config.server.port, false));
 };
