@@ -24,9 +24,7 @@ export const checkAuthorization = (courierCanAccess: boolean) => {
                 if (err) {
                     throw new Error('Invalid or expired token.');
                 }
-
                 req.user = <DecodedUser>user;
-
                 if (req.user.role === 'courier' && !courierCanAccess) {
                     throw new Error('Invalid permission.');
                 } else if (req.user.role === 'courier') {
